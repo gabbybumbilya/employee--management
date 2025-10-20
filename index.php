@@ -1,3 +1,9 @@
+<?php 
+include 'db_connection.php';
+include 'EmployeeManager.class.php';
+include 'db_connection.php'
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
