@@ -205,6 +205,8 @@ class EmployeeManager {
         try {
             await this.apiCall(formData);
 
+            alert("Employee Added/Updated Successfully");
+
             const message = employeeId ? 'Employee updated successfully!' : 'Employee added successfully!';
             
             this.showMessage(message, 'success');
