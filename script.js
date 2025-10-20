@@ -16,24 +16,36 @@ class EmployeeManager {
     }
 
     async apiCall(formData) {
-        try {
-            const response = await fetch(this.apiUrl, {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            
-            if (!result.success) {
-                throw new Error(result.error || 'Unknown error occurred');
-            }
-            
-            return result.data;
-        } catch (error) {
-            console.error('API Error:', error);
-            this.showMessage(error.message, 'error');
-            throw error;
+    try {
+        // Make sure apiUrl points to your hosted api.php
+        const response = await fetch("api.php", {
+            method: 'POST',
+            body: formData
+        });
+
+        // Check for network or server response issues
+        if (!response.ok) {
+            throw new Error(`Network error: ${response.status} ${response.statusText}`);
         }
+
+        // Parse the response as JSON
+        const result = await response.json();
+
+        // Handle API-level errors
+        if (!result.success) {
+            throw new Error(result.error || 'Unknown error occurred from server');
+        }
+
+        // Return data if successful
+        return result.data;
+
+    } catch (error) {
+        console.error('API Error:', error);
+        this.showMessage(error.message || 'An unexpected error occurred', 'error');
+        throw error;
     }
+}
+
 
     async loadDepartments() {
         try {
