@@ -152,6 +152,8 @@ class EmployeeManager {
             console.error('Error deleting employee:', error);
             this.showMessage('Error deleting employee: ' + error.message, 'error');
         }
+
+        alert("Employee Deleted Successfully");
     }
 
     // Method 1: Directly remove the row from UI
@@ -205,6 +207,8 @@ class EmployeeManager {
         try {
             await this.apiCall(formData);
 
+            alert("Employee Added/Updated Successfully");
+
             const message = employeeId ? 'Employee updated successfully!' : 'Employee added successfully!';
             
             this.showMessage(message, 'success');
@@ -241,8 +245,6 @@ class EmployeeManager {
             document.getElementById('submitBtn').textContent = 'Update Employee';
             document.getElementById('formTitle').textContent = 'Edit Employee';
             showTab('addEmployee');
-
-            alert("Employee Edited Successfully");
 
         } catch (error) {
             // Error already handled in apiCall
