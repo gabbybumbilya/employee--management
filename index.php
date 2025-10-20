@@ -9,7 +9,7 @@
 <body>
     <header>
         <div class="container">
-            <h1>Employee Management System</h1>
+            <h1>Simple Employee Management</h1>
         </div>
     </header>
 
@@ -96,7 +96,6 @@
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

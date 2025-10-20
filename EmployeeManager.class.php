@@ -52,15 +52,35 @@ class EmployeeManager {
     }
 
     // DELETE - Delete employee
-    public function deleteEmployee($id) {
-        try {
-            $sql = "DELETE FROM employees WHERE id = :id";
-            $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute(['id' => $id]);
-        } catch (PDOException $e) {
-            throw new Exception(message: "Error deleting employee: " . $e->getMessage());
+   public function deleteEmployee($id) {
+    try {
+        // First, check if employee exists
+        $checkSql = "SELECT id FROM employees WHERE id = :id";
+        $checkStmt = $this->pdo->prepare($checkSql);
+        $checkStmt->execute(['id' => $id]);
+        
+        if (!$checkStmt->fetch()) {
+            throw new Exception("Employee not found");
         }
+
+        // Delete the employee
+        $sql = "DELETE FROM employees WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result && $stmt->rowCount() > 0) {
+            return true;
+        } else {
+            throw new Exception("No employee was deleted - possibly already deleted");
+        }
+    } catch (PDOException $e) {
+        // Check if it's a foreign key constraint error
+        if ($e->getCode() == '23000') {
+            throw new Exception("Cannot delete employee: This employee is referenced in other records");
+        }
+        throw new Exception("Error deleting employee: " . $e->getMessage());
     }
+}
 
     // Get all departments
     public function getDepartments() {
@@ -104,7 +124,7 @@ class EmployeeManager {
                     SELECT MAX(salary) 
                     FROM employees 
                     WHERE department_id = e.department_id
-                )
+                    )
                 ORDER BY d.name";
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -3,10 +3,17 @@ require_once 'config.php';
 require_once 'EmployeeManager.class.php';
 
 try {
+    $pdo = new PDO("mysql:host=localhost;dbname=employee_management", "root", "");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
     $employeeManager = new EmployeeManager($pdo);
 
-    // Get the action from POST or GET
-    $action = $_POST['action'] ?? $_GET['action'] ?? '';
+    // Get the action from POST
+    $action = $_POST['action'] ?? '';
+
+    // Enable CORS for debugging
+    header('Access-Control-Allow-Origin: *');
+    header('Content-Type: application/json');
 
     switch ($action) {
         case 'get_all_employees':
@@ -15,7 +22,7 @@ try {
             break;
 
         case 'get_employee':
-            $id = $_POST['id'] ?? $_GET['id'] ?? 0;
+            $id = $_POST['id'] ?? 0;
             if (!$id) sendError('Employee ID is required');
             $employee = $employeeManager->getEmployee($id);
             sendResponse($employee);
@@ -47,10 +54,20 @@ try {
             break;
 
         case 'delete_employee':
-            $id = $_POST['id'] ?? $_GET['id'] ?? 0;
-            if (!$id) sendError('Employee ID is required');
+            $id = $_POST['id'] ?? 0;
+            error_log("Delete request received for ID: " . $id); // Debug log
+            
+            if (!$id) {
+                sendError('Employee ID is required');
+            }
+            
             $result = $employeeManager->deleteEmployee($id);
-            sendResponse(['message' => 'Employee deleted successfully']);
+            
+            if ($result) {
+                sendResponse(['message' => 'Employee deleted successfully']);
+            } else {
+                sendError('Failed to delete employee');
+            }
             break;
 
         case 'get_departments':
@@ -79,7 +96,7 @@ try {
             break;
 
         default:
-            sendError('Invalid action specified');
+            sendError('Invalid action specified: ' . $action);
             break;
     }
 

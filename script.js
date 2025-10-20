@@ -1,6 +1,7 @@
 class EmployeeManager {
     constructor() {
         this.apiUrl = 'api.php';
+        this.currentTab = 'employees'; // Track current tab
         this.loadDepartments();
         this.loadEmployees();
         this.loadDashboard();
@@ -94,10 +95,10 @@ class EmployeeManager {
                 <tbody>
         `;
 
-        employees.forEach(employee => {
+        employees.forEach((employee, index) => {
             html += `
-                <tr>
-                    <td>${employee.id}</td>
+                <tr id="employee-${employee.id}">
+                    <td>${index + 1}</td>
                     <td>${this.escapeHtml(employee.name)}</td>
                     <td>${this.escapeHtml(employee.email)}</td>
                     <td>$${this.formatCurrency(employee.salary)}</td>
@@ -115,6 +116,84 @@ class EmployeeManager {
         container.innerHTML = html;
     }
 
+    async deleteEmployee(id) {
+        console.log('Deleting employee ID:', id);
+        
+        if (!confirm('Are you sure you want to delete this employee?')) {
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('action', 'delete_employee');
+            formData.append('id', id);
+            
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                 alert('Employee deleted successfully!', 'success');
+              //  this.showMessage('Employee deleted successfully!', 'success');
+                
+                // Method 1: Remove from UI immediately
+                this.removeEmployeeRow(id);
+                
+                // Method 2: Reload current tab data
+                this.refreshCurrentTab();
+                
+            } else {
+                this.showMessage(result.error || 'Error deleting employee.', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting employee:', error);
+            this.showMessage('Error deleting employee: ' + error.message, 'error');
+        }
+    }
+
+    // Method 1: Directly remove the row from UI
+    removeEmployeeRow(employeeId) {
+        const row = document.getElementById(`employee-${employeeId}`);
+        if (row) {
+            row.remove();
+            this.showMessage('Employee deleted successfully!', 'success');
+            
+            // Check if table is empty and update accordingly
+            const tbody = document.querySelector('#employeeList tbody');
+            if (tbody && tbody.children.length === 0) {
+                document.getElementById('employeeList').innerHTML = '<p>No employees found.</p>';
+            }
+        } else {
+            // If row not found, reload the entire list
+            this.loadEmployees();
+        }
+    }
+
+    // Method 2: Refresh data based on current tab
+    refreshCurrentTab() {
+        const activeTab = document.querySelector('.tab-content.active').id;
+        
+        switch (activeTab) {
+            case 'employees':
+                this.loadEmployees();
+                break;
+            case 'dashboard':
+                this.loadDashboard();
+                break;
+            case 'reports':
+                this.loadDashboard(); // Reports also uses dashboard data
+                break;
+        }
+    }
+
+    // Update the tab switching function to track current tab
+    setCurrentTab(tabName) {
+        this.currentTab = tabName;
+    }
+
     async handleEmployeeSubmit() {
         const form = document.getElementById('employeeForm');
         const formData = new FormData(form);
@@ -125,15 +204,17 @@ class EmployeeManager {
 
         try {
             await this.apiCall(formData);
-            
-            alert('Employee added successfully!');
+
             const message = employeeId ? 'Employee updated successfully!' : 'Employee added successfully!';
+            
             this.showMessage(message, 'success');
             
-            this.loadEmployees();
-            this.loadDashboard();
+            // Refresh all data
+            await this.loadEmployees();
+            await this.loadDashboard();
             this.resetForm();
             
+            // Switch to employees tab after add/update
             if (!employeeId) {
                 showTab('employees');
             }
@@ -160,27 +241,9 @@ class EmployeeManager {
             document.getElementById('submitBtn').textContent = 'Update Employee';
             document.getElementById('formTitle').textContent = 'Edit Employee';
             showTab('addEmployee');
-            alert('Employee edited successfully!');
-        } catch (error) {
-            // Error already handled in apiCall
-        }
-    }
 
-    async deleteEmployee(id) {
-        if (!confirm('Are you sure you want to delete this employee?')) {
-            return;
-        }
+            alert("Employee Edited Successfully");
 
-        try {
-            const formData = new FormData();
-            formData.append('action', 'delete_employee');
-            formData.append('id', id);
-            
-            await this.apiCall(formData);
-            
-            this.showMessage('Employee deleted successfully!', 'success');
-            this.loadEmployees();
-            this.loadDashboard();
         } catch (error) {
             // Error already handled in apiCall
         }
@@ -204,7 +267,7 @@ class EmployeeManager {
         try {
             const formData = new FormData();
             formData.append('action', 'get_dashboard_stats');
-            
+
             const stats = await this.apiCall(formData);
             this.displayDashboardStats(stats);
         } catch (error) {
@@ -240,7 +303,7 @@ class EmployeeManager {
         try {
             const formData = new FormData();
             formData.append('action', 'get_department_rankings');
-            
+
             const rankings = await this.apiCall(formData);
             this.displayDepartmentRankings(rankings);
         } catch (error) {
@@ -288,7 +351,7 @@ class EmployeeManager {
         try {
             const formData = new FormData();
             formData.append('action', 'get_above_avg_salary');
-            
+
             const employees = await this.apiCall(formData);
             this.displayAboveAvgSalary(employees);
         } catch (error) {
@@ -340,7 +403,7 @@ class EmployeeManager {
         try {
             const formData = new FormData();
             formData.append('action', 'get_dept_highest_paid');
-            
+
             const employees = await this.apiCall(formData);
             this.displayHighestPaidByDept(employees);
         } catch (error) {
@@ -422,7 +485,7 @@ class EmployeeManager {
     }
 }
 
-// Tab navigation function
+// Updated tab navigation function
 function showTab(tabName) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
@@ -439,6 +502,9 @@ function showTab(tabName) {
     
     // Add active class to clicked tab
     event.target.classList.add('active');
+
+    // Update current tab in manager
+    employeeManager.setCurrentTab(tabName);
 
     // Reload data if needed
     if (tabName === 'dashboard' || tabName === 'reports') {
