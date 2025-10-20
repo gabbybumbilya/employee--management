@@ -191,3 +191,67 @@ table th {
     display: flex;
     gap: 0.5rem;
 }
+
+/* Ranking styles */
+.rank-cell {
+    font-weight: bold;
+    text-align: center;
+}
+
+.rank-first {
+    background-color: #fff3cd !important;
+    color: #856404;
+}
+
+.rank-second {
+    background-color: #e9ecef !important;
+    color: #495057;
+}
+
+.rank-third {
+    background-color: #f8f9fa !important;
+    color: #6c757d;
+}
+
+.rank-number {
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+.positive {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.negative {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.neutral {
+    color: #6c757d;
+}
+
+/* Table enhancements */
+#departmentRankings table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+#departmentRankings table th {
+    background: #2c3e50;
+    color: white;
+    padding: 12px;
+    text-align: center;
+}
+
+#departmentRankings table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#departmentRankings table tr:hover {
+    background-color: #f8f9fa;
+}

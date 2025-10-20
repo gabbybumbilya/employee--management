@@ -312,40 +312,59 @@ class EmployeeManager {
     }
 
     displayDepartmentRankings(rankings) {
-        const container = document.getElementById('departmentRankings');
-        
-        if (!rankings || rankings.length === 0) {
-            container.innerHTML = '<p>No department data available.</p>';
-            return;
+    const container = document.getElementById('departmentRankings');
+    
+    if (!rankings || rankings.length === 0) {
+        container.innerHTML = '<p>No department data available.</p>';
+        return;
+    }
+
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Department</th>
+                    <th>Employees</th>
+                    <th>Avg Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    rankings.forEach(dept => {
+        // Determine rank color
+        let rankClass = '';
+        if (dept.salary_rank === 1) rankClass = 'rank-first';
+        else if (dept.salary_rank === 2) rankClass = 'rank-second';
+        else if (dept.salary_rank === 3) rankClass = 'rank-third';
+
+        // Determine percentage color
+        let percentClass = 'neutral';
+        let percentSymbol = '';
+        if (dept.vs_company_avg_percent > 0) {
+            percentClass = 'positive';
+            percentSymbol = '+';
+        } else if (dept.vs_company_avg_percent < 0) {
+            percentClass = 'negative';
         }
 
-        let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Department</th>
-                        <th>Employee Count</th>
-                        <th>Average Salary</th>
-                    </tr>
-                </thead>
-                <tbody>
+        html += `
+            <tr>
+                <td class="rank-cell ${rankClass}">
+                    <span class="rank-number">#${dept.salary_rank}</span>
+                    ${dept.salary_rank === 1 ? '🥇' : dept.salary_rank === 2 ? '🥈' : dept.salary_rank === 3 ? '🥉' : ''}
+                </td>
+                <td><strong>${this.escapeHtml(dept.department_name)}</strong></td>
+                <td>${dept.employee_count}</td>
+                <td><strong>$${this.formatCurrency(dept.avg_salary, 2)}</strong></td>
+            </tr>
         `;
+    });
 
-        rankings.forEach(dept => {
-            html += `
-                <tr>
-                    <td>#${dept.salary_rank}</td>
-                    <td>${this.escapeHtml(dept.department_name)}</td>
-                    <td>${dept.employee_count}</td>
-                    <td>$${this.formatCurrency(dept.avg_salary, 2)}</td>
-                </tr>
-            `;
-        });
-
-        html += '</tbody></table>';
-        container.innerHTML = html;
-    }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
 
     async loadAboveAvgSalary() {
         try {

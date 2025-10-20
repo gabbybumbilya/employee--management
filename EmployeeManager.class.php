@@ -103,18 +103,20 @@ class EmployeeManager {
 
     // SQL SUBQUERY 2: Get department rankings by average salary
     public function getDepartmentSalaryRankings() {
-        $sql = "SELECT d.name as department_name,
-                (SELECT COUNT(*) FROM employees WHERE department_id = d.id) as employee_count,
-                (SELECT AVG(salary) FROM employees WHERE department_id = d.id) as avg_salary,
-                (SELECT RANK() OVER (ORDER BY AVG(salary) DESC) 
-                 FROM employees WHERE department_id = d.id) as salary_rank
-                FROM departments d
-                HAVING employee_count > 0
-                ORDER BY salary_rank";
-        $stmt = $this->pdo->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
+    $sql = "SELECT 
+                d.name as department_name,
+                COUNT(e.id) as employee_count,
+                COALESCE(AVG(e.salary), 0) as avg_salary,
+                RANK() OVER (ORDER BY AVG(e.salary) DESC) as salary_rank
+            FROM departments d
+            LEFT JOIN employees e ON d.id = e.department_id
+            GROUP BY d.id, d.name
+            HAVING employee_count > 0
+            ORDER BY salary_rank";
+    
+    $stmt = $this->pdo->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
     // SQL SUBQUERY 3: Get employees with highest salary in their department
     public function getDepartmentHighestPaidEmployees() {
         $sql = "SELECT e.*, d.name as department_name
