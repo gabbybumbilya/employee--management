@@ -1,9 +1,4 @@
 <?php
-include 'config.php';
-include 'db_connection.php';
-include 'EmployeeManager.class.php';
-
-
 require_once 'config.php';
 require_once 'EmployeeManager.class.php';
 

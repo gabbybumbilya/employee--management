@@ -16,36 +16,24 @@ class EmployeeManager {
     }
 
     async apiCall(formData) {
-    try {
-        // Make sure apiUrl points to your hosted api.php
-        const response = await fetch("api.php", {
-            method: 'POST',
-            body: formData
-        });
-
-        // Check for network or server response issues
-        if (!response.ok) {
-            throw new Error(`Network error: ${response.status} ${response.statusText}`);
+        try {
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Unknown error occurred');
+            }
+            
+            return result.data;
+        } catch (error) {
+            console.error('API Error:', error);
+            this.showMessage(error.message, 'error');
+            throw error;
         }
-
-        // Parse the response as JSON
-        const result = await response.json();
-
-        // Handle API-level errors
-        if (!result.success) {
-            throw new Error(result.error || 'Unknown error occurred from server');
-        }
-
-        // Return data if successful
-        return result.data;
-
-    } catch (error) {
-        console.error('API Error:', error);
-        this.showMessage(error.message || 'An unexpected error occurred', 'error');
-        throw error;
     }
-}
-
 
     async loadDepartments() {
         try {
@@ -164,8 +152,6 @@ class EmployeeManager {
             console.error('Error deleting employee:', error);
             this.showMessage('Error deleting employee: ' + error.message, 'error');
         }
-
-        alert("Employee Deleted Successfully");
     }
 
     // Method 1: Directly remove the row from UI
@@ -219,8 +205,6 @@ class EmployeeManager {
         try {
             await this.apiCall(formData);
 
-            alert("Employee Added/Updated Successfully");
-
             const message = employeeId ? 'Employee updated successfully!' : 'Employee added successfully!';
             
             this.showMessage(message, 'success');
@@ -257,6 +241,8 @@ class EmployeeManager {
             document.getElementById('submitBtn').textContent = 'Update Employee';
             document.getElementById('formTitle').textContent = 'Edit Employee';
             showTab('addEmployee');
+
+            alert("Employee Edited Successfully");
 
         } catch (error) {
             // Error already handled in apiCall
