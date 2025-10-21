@@ -3,7 +3,7 @@ require_once 'config.php';
 require_once 'EmployeeManager.class.php';
 
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=employee_management", "root", "");
+    $pdo = new PDO("mysql:host=sql207.infinityfree.com;dbname=if0_40216671_employee_management", username: "if0_40216671", password: "fkyyqGcV80YTYAs");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     $employeeManager = new EmployeeManager($pdo);
