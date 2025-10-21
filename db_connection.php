@@ -1,8 +1,8 @@
 <?php
-$host = 'localhost';
-$dbname = 'employee_management';
-$username = 'root';
-$password = '';
+$host = 'sql207.infinityfree.com';
+$dbname = 'if0_40216671_employee_management';
+$username = 'if0_40216671';
+$password = 'fkyyqGcV80YTYAs';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
